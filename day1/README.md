@@ -47,5 +47,11 @@ On the memory realm, we have the well known ```free``` to check the amount of me
 
 The ```vmstat``` command can show the virtual memory details.
 
-The disk space is acomplish
+The disk space usage is acomplish with ```df``` and to get the size of a file use ```du```: 
+
+![df](/day1/images/df.png)
+
+The most curious processs to me was ```iftop```, which is capable to capture real time traffic on an interface:
+
+![iftop](/day1/images/iftop.png)
 
