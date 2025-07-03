@@ -37,11 +37,56 @@ Upon compilation, we can modify parameters so it is not dispose on root director
 
 ![configure](images/configure.png)
 
-For testing purpose, we only add ```prefix==/usr/```` in order to create a directory above the binaries and share environment. Finally, a make install on the destination directory:
+For testing purpose, we only add ```prefix==/usr/``` in order to create a directory above the binaries and share environment. Finally, a make install on the destination directory so it can be ***fakerooted***:
 ```bash
 make .
 make install DESTDIR=/tmp/nano-test/
 ```
+
+We are able to execute it as the system would do:
+
+![tmp](images/tmp.png)
+
+We create a tarball from the ```/usr/```folder:
+
+```bash
+tar cvf nano-8.5.newpkg .
+```
+
+In the end, the package manager would extract that tarball and point it to the respective directories, as following:
+```bash
+tar xvf nano-8.5.newpkg -C /
+```
+
+It will work just as it is ```nano```:
+
+![nano-test](images/nano-test.png)
+
+### Operations
+
+In order to encapsulate each function, we implement for each (create, update, install and delete).
+
+#### Createpkg
+
+On this operation, it has to attend some validation on:
+* name
+* extensions
+* version
+* build
+
+And the package some prerequisites:
+* unique name
+* no spaces on it
+* unique extension
+* count hifens
+
+We start with a shell script 
+
+
+
+
+
+
 
 
 
