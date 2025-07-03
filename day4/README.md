@@ -20,3 +20,31 @@ At the beginning, all packages installed should be compilled and its files distr
 
 At this age that the **package manager** was created, in 90s era.
 We can classify it in low level and high level.
+
+### Simulation
+
+To proceed with atomic install, we need to do a **fakeroot** of the package. As an example, we will compile *nano* and proceed to create a package:
+
+![nano](images/nano.png)
+
+We can extract it via ```tar```:
+
+```bash
+tar xvf nano-8.5.tar.xz
+```
+
+Upon compilation, we can modify parameters so it is not dispose on root directories:
+
+![configure](images/configure.png)
+
+For testing purpose, we only add ```prefix==/usr/```` in order to create a directory above the binaries and share environment. Finally, a make install on the destination directory:
+```bash
+make .
+make install DESTDIR=/tmp/nano-test/
+```
+
+
+
+
+
+
