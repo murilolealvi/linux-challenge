@@ -96,4 +96,49 @@ And the package some prerequisites:
 * unique extension
 * count hifens
 
-We start with a shell script 
+We start with a shell script to create a package by its argument and check if it is empty:
+```sh
+case "$1" in #pkg argument
+        create|-c) #create or -c operator
+                shift #remove the inital argument on the queue (go to the next) to get package name
+        #the -z is a operator to test if the string is empty
+                if [ -z "$1" ]; then
+                        printf '%s\n' "Package is null" #%s pass a string, in this case a new line
+                        exit 1 #exit digit
+                fi
+        ;;
+```
+
+We can implement the create package function with command ```tar```:
+```sh
+#function
+CREATE() {
+        pkg_name="$1" #empty argument verified below
+        if tar -cvf ../${pkg_name}. .; then #pack the package as a tarball
+                printf '%s\n' "Package created: ${pkg_name}"
+                return 0               
+        else
+                printf '%s\n' "Package failed: ${pkg_name}"
+                exit 1
+        fi
+}
+```
+Let's try it out by giving it execution permission:
+
+![null](images/null.png)
+
+Afterwards, we can create this shell script as a process to the superuser (```/usr/sbin/```):
+
+```bash
+cp createpkg /usr/sbin
+```
+
+From previous compiled app ***nano-test***, we can compile it to the source with this new script:
+
+![createpkg](images/createpkg.png)
+
+We can see the package created: 
+
+![package](images/package.png)
+
+OBS: We can use ```sh -x``` to check which contexts the execution passes for a specific argument
