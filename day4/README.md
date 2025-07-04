@@ -14,12 +14,25 @@ apt install mc
 
 ## Creating our own package manager
 
+### Introduction
+
 I will leverage this topic to learn how to create a package manager with [Slackjeff](https://slackjeff.com.br/) course! 
 
 At the beginning, all packages installed should be compilled and its files distributed on */sbin* and other directories. To remove or update it, the user should keep track for all the files generated and exlude these one by one. The hardcore would create a script to automatically perform this all.
 
 At this age that the **package manager** was created, in 90s era.
 We can classify it in low level and high level.
+
+The low level tracks all libraries that will be installed and do all of it operations (create, update and delete) Examples:
+* dpkg
+* rpm
+* pkgtools
+  
+In other hand, the high level will get the package from a mirror on the web, evaluate dependencies and forward to the low level. Examples:
+* apt
+* yum/dnf
+* pacman
+
 
 ### Simulation
 
@@ -62,7 +75,10 @@ It will work just as it is ```nano```:
 
 ![nano-test](images/nano-test.png)
 
+
 ### Operations
+
+Let's focus on the low level.
 
 In order to encapsulate each function, we implement for each (create, update, install and delete).
 
@@ -81,15 +97,3 @@ And the package some prerequisites:
 * count hifens
 
 We start with a shell script 
-
-
-
-
-
-
-
-
-
-
-
-
