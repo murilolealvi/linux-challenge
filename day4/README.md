@@ -168,6 +168,27 @@ Validating again:
 
 ![test-version](images/test-version.png)
 
+To desaggregate the code, we use a **parser** in order to append options:
+
+![parser](images/parser.png)
+
+It validates options *verbose* and *create*, also append every package that goes on.
+
+Our main case that invokes the functions to check and create get its argument modified by the output of the parser:
+
+![case](images/case.png)
+
+A function to instruct how to use the package is used (like a ```--help```): 
+
+![usage](images/usage.png)
+
+We can test it:
+
+![usage-test](images/usage-test.png)
+
+
+
+
 
 
 
