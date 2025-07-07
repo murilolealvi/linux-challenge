@@ -141,4 +141,40 @@ We can see the package created:
 
 ![package](images/package.png)
 
-OBS: We can use ```sh -x``` to check which contexts the execution passes for a specific argument
+OBS: We can use ```sh -x``` to check which contexts the execution passes for a specific argument.
+
+The optimization is done in order to get multiple packages and check it all in a ```for``` loop, also encapsulating the variables as ```local```:
+
+![for](images/for.png)
+
+
+We can check it working:
+
+![optimization](images/optimization.png)
+
+Now, we validate the package extension:
+
+![extension](images/extension.png)
+
+Validating:
+
+![validating](images/validating.png)
+
+Now we guarantee that it includes version+build (e.g., package-1.0-1, in other words version 1.0 build 1):
+
+![version](images/version.png)
+
+Validating again:
+
+![test-version](images/test-version.png)
+
+
+
+
+
+
+
+
+
+
+
