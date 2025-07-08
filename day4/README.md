@@ -213,6 +213,44 @@ Below we test the script:
 
 ![track](images/track.png)
 
+We have to clean the track for only the important modifications. As you can see, it shows all the directory starting from ```\.```. We can filter it with ```sed```:
+
+```bash
+sed 's@\.\/@/@g;' '/var/log/newpkg/package.track'
+```
+It will remove the root directory from the logs:
+
+![logs](images/logs.png)
+
+We can still remove empty logs:
+```bash
+sed '/ˆ$/d' '/var/log/newpkg/package.track'
+```
+
+![sed](images/sed.png)
+
+Now, we want it to only filter for files, as example:
+```bash
+/usr/share/doc/nano/ #discard
+/usr/share/doc/nano/faq.html #consider
+```
+
+Finally, we can filter:
+```bash
+sed '/\/$/d' '/var/log/newpkg/package.track'
+```
+
+![files](images/only-files.png)
+
+We must be able to install multiple packages, so we add a ***parser*** and a for loop to each one:
+
+![install-multiple](images/install-multiple.png)
+
+Validating:
+
+![multiple](images/multiple.png)
+
+
 
 
 
