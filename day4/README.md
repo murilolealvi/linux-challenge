@@ -186,6 +186,39 @@ We can test it:
 
 ![usage-test](images/usage-test.png)
 
+#### Installpkg
+
+Ubuntu stores package installation details in ```/var/lib/dpkg/status```:
+
+![dpkg](images/dpkg.png)
+
+In order to install and uninstall a package, we have to **track** all of its extensions and binaries downloaded. As seen above, Ubuntu and other distros do it on some ways.
+
+We will create our own tracking system. It will reside on ```/var/log/newpkg/```. We first create a simple test if the directory is created:
+
+![trackdir](images/trackdir.png)
+
+OBS: The logical OR is wrong, it must be ```&&``` and not ```$$```
+
+Testing it:
+
+![mkdir](images/mkdir.png)
+
+
+For now, we create a install function with the tar verbose as output to the track:
+
+![install](images/install.png)
+
+Below we test the script:
+
+![track](images/track.png)
+
+
+
+
+
+
+
 
 
 
