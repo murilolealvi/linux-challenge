@@ -241,7 +241,7 @@ sed '/\/$/d' '/var/log/newpkg/package.track'
 ```
 
 ![files](images/only-files.png)
-
+ 
 We must be able to install multiple packages, so we add a ***parser*** and a for loop to each one:
 
 ![install-multiple](images/install-multiple.png)
@@ -249,6 +249,40 @@ We must be able to install multiple packages, so we add a ***parser*** and a for
 Validating:
 
 ![multiple](images/multiple.png)
+
+#### Removepkg
+
+To remove the package, we need to list the packages on track file and ```rm```them.
+
+We start with a scope to find the package and check if it exists:
+
+![remove](images/remove.png)
+
+We can test if it can found the track files:
+
+![search-track](images/search-track.png)
+
+As we can see, for each loop it confirms if it ```grep``` the package. We must optimize this with a **flag***:
+
+![foundpkg](images/foundpkg.png)
+
+We proceed to create the REMOVE function, which will iterate over each file and delete it. We use ```unlink``` function to maintain it safe and avoid ```rm -rf``` command:
+
+![removepkg](images/removepkg.png)
+
+
+We test it:
+![nano-test-remove](images/nano-test-remove.png)
+
+
+
+
+
+
+
+
+
+
 
 
 
