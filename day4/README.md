@@ -213,6 +213,22 @@ Below we test the script:
 
 ![track](images/track.png)
 
+Finally, we add the ability to remove multiple packages:
+
+```bash
+removepkg -r pkg1 pkg2 ...
+```
+
+We acomplish that with the ***parser*** and a for loop:
+
+![remove-multiple](images/remove-multiple.png)
+
+To find a package, we optimize this for the command ```grep``` to search for **words**:
+
+```bash
+grep -wq "$1"
+```
+
 
 
 
