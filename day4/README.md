@@ -274,6 +274,20 @@ We proceed to create the REMOVE function, which will iterate over each file and 
 We test it:
 ![nano-test-remove](images/nano-test-remove.png)
 
+#### Fakeroot
+
+We must add an option so the user is able to install a package outside root directory, as we done previously. To that, we add a new parser ```--fake``` :
+
+![fakeroot-parser](images/fakeroot-parser.png)
+
+We validate it to ```/tmp``` directory:
+
+![fakeroot-tmp](images/fakeroot-tmp.png)
+
+
+
+
+
 
 
 
