@@ -27,6 +27,10 @@ less +G file
 ```
 It opens in the end, as it would be with ```G``` pressed when paging with ```more``` or ```less```.
 
+We can go forward on this and get some shortcuts:
+
+![less](images/less.png)
+
 
 
 ## Terminal multiplexer
@@ -98,3 +102,4 @@ It can manage the panes all by yourself!
 (Ctrl+b) + <- #to the left
 ...and so on
 ```
+
