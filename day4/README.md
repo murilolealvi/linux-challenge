@@ -214,7 +214,6 @@ Below we test the script:
 ![track](images/track.png)
 
 Finally, we add the ability to remove multiple packages:
-
 ```bash
 removepkg -r pkg1 pkg2 ...
 ```
@@ -223,11 +222,96 @@ We acomplish that with the ***parser*** and a for loop:
 
 ![remove-multiple](images/remove-multiple.png)
 
-To find a package, we optimize this for the command ```grep``` to search for **words**:
-
+To find a package, we optimize this for the command
+```grep``` to search for words:
 ```bash
 grep -wq "$1"
 ```
+We have to clean the track for only the important modifications. As you can see, it shows all the directory starting from ```\.```. We can filter it with ```sed```:
+
+```bash
+sed 's@\.\/@/@g;' '/var/log/newpkg/package.track'
+```
+It will remove the root directory from the logs:
+
+![logs](images/logs.png)
+
+We can still remove empty logs:
+```bash
+sed '/ˆ$/d' '/var/log/newpkg/package.track'
+```
+
+![sed](images/sed.png)
+
+Now, we want it to only filter for files, as example:
+```bash
+/usr/share/doc/nano/ #discard
+/usr/share/doc/nano/faq.html #consider
+```
+
+Finally, we can filter:
+```bash
+sed '/\/$/d' '/var/log/newpkg/package.track'
+```
+
+![files](images/only-files.png)
+ 
+We must be able to install multiple packages, so we add a ***parser*** and a for loop to each one:
+
+![install-multiple](images/install-multiple.png)
+
+Validating:
+
+![multiple](images/multiple.png)
+
+#### Removepkg
+
+To remove the package, we need to list the packages on track file and ```rm```them.
+
+We start with a scope to find the package and check if it exists:
+
+![remove](images/remove.png)
+
+We can test if it can found the track files:
+
+![search-track](images/search-track.png)
+
+As we can see, for each loop it confirms if it ```grep``` the package. We must optimize this with a **flag***:
+
+![foundpkg](images/foundpkg.png)
+
+We proceed to create the REMOVE function, which will iterate over each file and delete it. We use ```unlink``` function to maintain it safe and avoid ```rm -rf``` command:
+
+![removepkg](images/removepkg.png)
+
+
+We test it:
+![nano-test-remove](images/nano-test-remove.png)
+
+#### Fakeroot
+
+We must add an option so the user is able to install a package outside root directory, as we done previously. To that, we add a new parser ```--fake``` :
+
+![fakeroot-parser](images/fakeroot-parser.png)
+
+We validate it to ```/tmp``` directory:
+
+![fakeroot-tmp](images/fakeroot-tmp.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
