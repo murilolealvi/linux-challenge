@@ -24,6 +24,13 @@ We need to use superuser in order to use these commands. After an issued ```sudo
 
 ![last](images/last.png)
 
+The configuration to disable login as root is on ```/etc/ssh/sshd_config```.
+After that, we need to reboot:
+
+```bash
+systemctl restart sshd
+```
+
 
 ## Extension
 With great power comes great responsibility...
