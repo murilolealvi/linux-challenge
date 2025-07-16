@@ -1,0 +1,99 @@
+#!/bin/sh
+
+
+#global variables
+TRACKDIR="/var/log/newpkg" #track directory
+PKGEXT=".newpkg"
+
+#functions
+
+INSTALL() {
+	local pkgdir="$1"
+	pkgname=$(basename $pkgdir) #get only package name on current directory
+	pkgname="${pkgname%$PKGEXT}" #remove extension
+	local tar_options="vxf"
+	if [ "$VRB" -eq 1 ]; then #check verbose
+		tar_options="v${tar_options}"
+	fi
+
+	if tar "-${tar_options}"  "$pkgdir" -C "$FAKEROOTDIR/" >> "${TRACKDIR}/${pkgname}.track"; then #extract on / directory and track it as .track extension
+		#0BS: only > will overwrite, but >> appends the output
+		#clean track file in in place mode to modify output file (-i)
+		sed -i "/ˆ$/d; s@\.\/@/@g; /\/$/d" "${TRACKDIR}/${pkgname}.track"
+		printf '%s\n' "Package installed: ${pkgname}"
+		return 0
+	else
+		printf '%s\n' "Package installation failed: ${pkgname}"
+		exit 1
+	fi
+
+}
+
+USAGE() {
+	cat <<EOF
+	Package manager for .newpkg files
+	--install | -i
+		Install a package
+	--fake | -f
+		Select a directory for the installation (default is /)
+	--verbose | -v
+		Show detailed information
+EOF
+}
+
+#parser
+PKG=""
+FAKEROOTDIR=""
+VRB=0
+while [ -n "$1" ]; do #while argument is not null
+        case "$1" in
+                --install|-i)
+                        CMD=$1
+                        shift #remove the inital argument on the queue (go to the next) to get package name
+                ;;
+                --verbose|-v)
+                        VRB=1 #verbose flag
+                        shift
+                ;;
+		--fake|-f)
+			FK=1 #fakeroot flag
+			shift
+			FAKEROOTDIR="$1"
+			[ ! -d "$FAKEROOTDIR" ] && mkdir -v "$FAKEROOTDIR"
+			shift
+		;;
+
+                -*)
+                        printf "%s\n" "Invalid option: $1"
+                        exit 1
+                ;;
+
+                *)
+                        PKG="$PKG $1"
+                        shift
+                ;;
+        esac
+done
+
+#main
+[ ! -d "$TRACKDIR" ] && mkdir -v "$TRACKDIR"  #check if the directory exists, if not it is created
+VRB=0
+case "$CMD" in
+	--install|-i)
+		for pkg in $PKG; do
+		     	
+			if [ -e "$pkg" ]; then #check if package exists
+				INSTALL "$pkg" || exit 1
+			else
+				echo "Package "$pkg" does not exist"
+				exit 1
+			fi
+		done
+	;;
+	*)
+		USAGE
+		exit 1
+	;;
+	
+esac
+

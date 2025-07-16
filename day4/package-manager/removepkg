@@ -1,0 +1,95 @@
+#!/bin/sh
+
+
+
+#global variables
+TRACKDIR="/var/log/newpkg/"
+export LC_ALL=C
+export LANG=c
+
+#functions
+REMOVE() {
+
+	local pkgtrack="$1"
+	while IFS= read -r files; do #internal field separator to handle filenames
+		if [ -e "$files" ] || [ -L "$files" ]; then #check existence and broken symlink	
+			unlink "$files" && echo "Deleted: $files" #unlink and delete
+			#could be replaced to rm -f, but unlink is safer
+		fi
+	done < "$pkgtrack" #input redirection
+
+	#all of this is reduced as a xargs call
+		#xargs -a "$pkgtrack" -r -n 1 -- unlink
+
+		#remove track file
+}
+
+
+USAGE(){
+	cat <<EOF
+	Package manager for .newpkg files
+	-- remove | -r
+		Remove a package
+EOF
+}
+
+#parser
+PKG=""
+while [ -n "$1" ]; do
+	case "$1" in
+		--remove|-r)
+			CMD="$1"
+			shift
+		;;
+		-*)
+			echo "Invalid option: $1"
+			exit 1
+		;;
+		*)
+			PKG="$PKG $1"
+			shift
+		;;
+	esac
+done
+
+
+
+
+#main
+
+case "$CMD" in
+	--remove|-r)
+		[ -z "$CMD" ] && { #if empty
+			echo "Provide the package name"
+			exit 1
+		}
+
+		cd "$TRACKDIR"
+		for package in $PKG; do
+			foundpkg=0
+			for track_file in *; do #loop into track directory to find the package
+				if echo "$track_file" | grep -wq "$package" ; then
+					echo "\nFound $track_file"
+					foundpkg=1
+					REMOVE "$track_file"
+					#remove track file
+					rm  "$TRACKDIR$track_file" && 
+						echo "Deleted: $TRACKDIR$track_file"
+					break #stop on first match
+				fi
+			done
+
+			if [ "$foundpkg" -eq 0 ]; then
+				echo "Package track not found: $package"
+				continue
+			fi
+		done
+	;;
+
+	*)
+		USAGE
+		exit 1
+	;;
+esac
+
+			

@@ -1,0 +1,98 @@
+#!/bin/sh
+#global variables
+export pkgext="newpkg" #define .newpkg as the extension to the packages"
+export LC_ALL=c #disable Unicode for better performance
+export LANG=CC
+#function
+CHECK() {
+	local pkg_name="$1"
+	#check version and build
+	local version_build_pattern="\-+[0-9]+\.[0-9]+-[0-9]+\." #regex for version and build
+	if ! echo "$pkg_name" | grep -qE "$version_build_pattern"; then
+		printf '%s\n' "Include version and build (e.g., package-1.0-1)"
+		return 1
+	fi
+	#check if the package have the right extension
+	#grep -q to supress normal output
+	if ! echo "$pkg_name" | grep -q "\b${pkgext}\b$"; then
+		printf '%s\n' "Insert the right extension: ${pkgext}"
+		return 1
+	fi
+	#check if the package name has spaces
+	#grep -E to activate extended regex support
+	if echo "$pkg_name" | grep -qE "\s+"; then #or [[:space:]]
+		printf '%s\n' "Remove spaces for package name. Aborting..."
+		return 1
+	fi
+
+}
+CREATE() {
+	local pkg_name="$1" #empty argument verified below
+	local tar_options="cf"
+	if [ "$VRB" -eq 1 ]; then
+		tar_options ="v${tar_options}"
+	fi
+	if tar "-${tar_options}" ../${pkg_name}  .; then #pack the package as a tarball (verbose or not)
+	       	printf '%s\n' "Package created: ${pkg_name}"
+       		return 0
+	else
+		printf '%s\n' "Package failed: ${pkg_name}"
+		exit 1
+	fi
+}
+
+USAGE() {
+	cat <<EOF
+	Package manager for .newpkg files
+	--create | -c
+		Create a package
+	--verbose | -v
+		Show detailed information
+EOF
+}
+
+#parser
+PKG=""
+VRB=0
+while [ -n "$1" ]; do #while argument is not null
+	case "$1" in
+		--create|-c)
+			CMD=$1
+			shift #remove the inital argument on the queue (go to the next) to get package name
+		;;
+		--verbose|-v)
+			VRB=1 #verbose flag
+			shift
+		;;
+		-*)
+			printf "%s\n" "Invalid option: $1"
+			exit 1
+		;;
+
+		*)
+			PKG="$PKG $1"
+			shift
+		;;
+	esac
+done
+
+case "$CMD" in #pkg argument
+	--create|-c) #create or -c operator
+	#the -z is a operator to test if the string is empty
+		if [ -z "$CMD" ]; then
+			printf '%s\n' "Package is null" #%s pass a string, in this case a new line
+			exit 1 #exit digit
+		fi
+
+		for package in $PKG; do #iterates over each argument e.g createpkg -c pkg1 pkg2 ...
+			CHECK "$package" || exit 1 #output code different from 0 gives error
+			CREATE "$package" #function call with the name verified
+		done
+	;;
+	*) #default case
+		USAGE
+		exit 1
+	;;
+
+esac #end case
+exit 0
