@@ -224,6 +224,7 @@ We acomplish that with the ***parser*** and a for loop:
 
 To find a package, we optimize this for the command
 ```grep``` to search for words:
+
 ```bash
 grep -wq "$1"
 ```

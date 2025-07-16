@@ -29,6 +29,7 @@ Commands to test:
 * u: undo changes on a line
 * x: erase current cursor
 * r + <character>: replace character with <character>
+* R + <characters>: replace each character in a row
 * Ctrl + r: redo
 * o: new line below and enters insert mode
 * O: new line above and enters insert mode
@@ -80,4 +81,18 @@ To execute any command, type ```:!<command>```.
 If I type it while reading, it prompts to continue:
 
 ![function](images/function.png)
+
+To write on another file:
+
+```bash
+:w new-file
+```
+
+To insert contents of a file:
+
+```bash
+:r file
+```
+
+
 
