@@ -137,3 +137,108 @@ cat /home/admin/access.log | awk '{print $1}' | sort | uniq -c | sort -r | head 
 
 ## Sad Servers "The Command Line Murders"
 
+We will investigate a crime scene, a funny way to manipulate the text with clues and find the culprit. It is based upon the the [repository](https://github.com/veltman/clmystery).
+
+First, we open ```mystery/``` directory and ```grep``` the crime scene with **CLUE** keyword:
+
+![crimescene](images/crimescene.png)
+
+
+We focus on the height, locations that he has membership and the girl that left previously. The culprit is member of the Bash History Musem, Rotary CLub and Delta SkyMiles.
+
+We ```cat``` all the members of these three locals and gather the ones that are members of all:
+
+
+```bash
+ cat Museum_of_Bash_History Rotary_Club Delta_SkyMiles | sort | uniq -c | awk '{if($1==3) print $2" "$3}'
+ ```
+
+ ![memberships](images/memberships.png)
+
+We ```grep``` Annabel on peoples description:
+
+![people](images/people.png)
+
+We check who of them has the same membership to the previously three locations: 
+![annabel-members](images/annabel-members.png)
+
+We have that **Annabel Church** has the most of the subscriptions, and the surname reveals a possible anglican name for New Zeland.
+
+On *vehicles* files, we have a curios info: the owner height. The owner is above the heigh line:
+
+![owner](images/owner.png)
+
+
+A option that will help on that is ```-B``` to the ```grep```:
+
+![grep](images/grep.png)
+
+In other words, it prints the **n** lines above with the pattern found:
+
+![grep-B](images/grep-B.png)
+
+Finally, we ```awk``` it to consider the lines that matches **Owner** and prints the name:
+
+![awk-owner](images/awk-owner.
+png)
+
+We sort it and discard duplicates if the owner has more than one vehicle with ```sort -u```:
+
+```bash
+cat vehicles | grep -B 1 "6'" | awk '/Owner/ {print $2" "$3}' | sort -u
+```
+
+We get the names of the members of the three institutions by the clues given and insert it on a file:
+
+![txtfile](images/txtfile.png)
+
+Also, the owner of the vehicles that are above 6':
+
+![member-of-three](images/member-of-three.png)
+
+
+We compare each file to show the names that converge on both with ```comm``` command:
+
+```bash
+comm -12 file1.txt file2.txt
+```
+
+OBS: The option 1 and 2 supress uniqueness from both files, we want the ones that appear on both
+
+![comm](images/comm.png)
+
+Was not sufficient to indicate the culprit. We investigate the **streets** file and check in **Buckingham Place** since it is where the Annabel has its description, and her has 2 of 3 memberships on the same place as the clue says.
+
+On it, we have a interview code:
+
+![code](images/interview-code.png)
+
+It advertises about a blue Honda:
+
+![honda](images/honda.png)
+
+We extend the ```grep``` command on vehicles to include the color and the car:
+
+```bash
+cat vehicles | grep -B3 "6'" | grep -A4 "Honda"
+```
+OBS: The -A option is for above 4 lines between the pattern found
+
+![above](images/above.png)
+
+Still not enough, so we search for the Blue one:
+
+```bash
+cat vehicles | grep -B3 "6'" | grep -A4 "Honda" | grep -A2 "Blue"
+```
+![blue](images/blue.png)
+
+Comparing it with the previous .txt files, the only one that matches all these factors is **Joe Germuska**:
+
+![culprit](images/culprit.png)
+
+And he is the murder.
+
+
+
+
