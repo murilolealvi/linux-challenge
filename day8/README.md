@@ -109,3 +109,31 @@ In this example, we use a FS equal to /, searches for lines that starts with / a
 * //: between these are the searching string
 
 ![shells](images/cut.png)
+
+
+## Sad Servers "Saskatoon"
+
+Desciption of the problem:
+
+*Find what's the IP address that has the most requests in this file (there's no tie; the IP is unique).*
+
+*Write the solution into a file /home/admin/highestip.txt. For example, if your solution is "1.2.3.4", you can do echo "1.2.3.4" > /home/admin/highestip.txt*
+
+I run into some solutions:
+
+```bash
+awk '{print $1}' /home/admin/access.log | sort | uniq -c | awk 'NF==1 {max=$1} $1>max {max=$1; ip=$2} END {print ip}' > /home/admin/highestip.txt
+```
+
+```bash
+awk '{count[$1]++} END {for (ip in count) {print count[ip], ip}}' /home/admin/access.log | sort -r | head -1 | cut -d " " -f2 > /home/admin/highestip.txt
+```
+
+The official solution:
+
+```bash
+cat /home/admin/access.log | awk '{print $1}' | sort | uniq -c | sort -r | head -1 | awk '{print $2}' > /home/admin/highestip.txt
+```
+
+## Sad Servers "The Command Line Murders"
+
