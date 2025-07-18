@@ -79,6 +79,49 @@ certbot --apache -d example.com
 #-d stands for domain
 ```
 
+## SadServers "Cape Town"
+
+*There's an Nginx web server installed and managed by systemd. Running curl -I 127.0.0.1:80 returns curl: (7) Failed to connect to localhost port 80: Connection refused , fix it so when you curl you get the default Nginx page.*
+
+We first get the process status with ```systemctl```:
+
+![status](images/nginx-status.
+png)
+
+From the logs, we see that the ```/etc/nginx/nginx.conf``` has failed. Let's take a look:
+
+On it, we see that it maintains a log for errors:
+
+![log](images/log.png)
+
+A possible culprit has been found, a character unexpected on ```sites-enabled``` file:
+
+![sites-enabled](images/sites-enabled.png)
+
+The first line has a **;**, let's remove it and restart the service:
+
+![char](images/char.png)
+
+Restarting:
+
+![restart](images/restart.png)
+
+From curl, it gives code 500 - Server Error. We still need to investigate.
+
+After some trials, I was unable to find it. It looks like the server is not handling concurrent connections:
+
+![too](images/too.png)
+
+So, the solution was residing a line called ```worker_rlimit_nofile``` at nging.conf:
+
+![worker](images/worker.png)
+
+In its documentation, we can observe that it indicates how many open files a worker process can have:
+
+![docs](images/docs.png)
+
+
+
 
 
 
