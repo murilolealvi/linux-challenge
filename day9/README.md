@@ -15,3 +15,8 @@ It has opened DNS, SSH and HTTP ports. Another way to do this is scanning our ow
 ![nmap](images/nmap.png)
 
 
+## Firewall
+
+The kernel has a bult-in framework called **netfilter** for packet filtering, NAT and other networking related operations. It has hooks exposed so programs can use these operations to query and configure.
+
+The low-level utility is ```iptables``` and the newer ```nftables``` are the most complex, we will start using ```ufw``` as it is more friendly.

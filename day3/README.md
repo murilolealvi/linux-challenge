@@ -127,3 +127,98 @@ ssh -D 8888 user@IP
 ```
 
 The option -D is the key to dynamically assign a port on the server reached by its IP.
+
+## Securing our own VPS
+
+We will manage ```/etc/ssh/sshd_config``` to select the most important fields to secure our server:
+
+![sshd](images/sshd.png)
+
+The options are:
+
+* Port : change the default port
+* PermitRootLogin : deny root login (no) or deny root login with password (prohibit-password)
+* X11 Forwarding : deny GUI access
+* MaxAuthTries : reduce authentication attempts to block the IP
+* MaxSessions : maximum concurrent sessions
+* ClientAliveInterval : maximum time of inactivity to withdraw access
+* PermitEmptyPasswords : revoke empty passwords usage
+* PasswordAuthentication : revoke password authentication
+
+![ssh-hardening](images/ssh-hardening.png)
+
+
+OBS: To share public SSH keys between devices we can use ```ssh-copy-id``` command:
+
+```bash
+ssh-copy-id -i ssh-file user@ip
+```
+
+### unattended-upgrades
+
+To keep track of current packages that need upgrade, the software *unattended-upgrades* is there to handle:
+
+![unattended-upgrades](images/unattended-upgrades.png)
+
+Let's get into the .conf file:
+
+```bash
+vim /etc/apt/apt.conf.d/50unnatended-upgrades
+```
+![security](images/security.png)
+
+It checks for security patches for our distro.
+We can blacklist packages:
+
+![blacklist](images/blacklist.png)
+
+We can run to check possible upgrades:
+
+```bash
+unattended-upgrades --dry-run --debug
+```
+
+### fail2ban
+
+In order to prevent brute force attacks on our SSH server, fail2ban monitors it actively and block briefly the atacker's IP address.
+
+It is imperative to have it on our VPS:
+
+```bash
+apt install fail2ban
+```
+
+It creates global variables attached to it:
+![fail2ban](images/fail2ban.png)
+
+On ```/etc/fail2ban/fail2ban.conf``` we can define log level, log file to load and the period to purge bans.
+
+OBS: Configuration files tend to be overwrited when the system updates
+To avoid this, we copy these files as **.local***:
+
+```bash
+cp fail2ban.conf fail2ban.local
+cp jail.conf jail.local
+```
+
+Useful flags:
+* bantime: time that the IP is kept banned (-1 to configure a forever ban)
+* findtime:  period for attempts
+* maxretry: max attempts to login
+
+To configure jails to SSH, we have to alter on profile sshd:
+
+![profile](images/sshd-profile.png)
+
+To actually activate the jail, we need to insert the flag:
+
+```bash
+[sshd]
+enabled = true
+```
+
+And since we modified the default port for SSH, we have to indicate it too:
+```bash
+ports = 2222
+```
+
