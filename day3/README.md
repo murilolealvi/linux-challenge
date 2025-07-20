@@ -222,3 +222,4 @@ And since we modified the default port for SSH, we have to indicate it too:
 ports = 2222
 ```
 
+All jail profiles could be below ```jail.d``` directory, for example a ```sshd.local``` file with all configurations just for SSH service.
