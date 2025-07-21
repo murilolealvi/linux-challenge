@@ -65,6 +65,8 @@ a2ensite example
 
 ### Security
 
+#### SSL
+
 Let's install SSL certificates on our web server. In summary, it creates an encrypted link between the server and the browser.
 
 We must install the ```certbot``` and link it to our Apache instance:
@@ -78,6 +80,30 @@ Then, we attach it to our localhost:
 certbot --apache -d example.com
 #-d stands for domain
 ```
+
+#### Apache vulnerabilities
+
+By default, Apache delivers so much information to the user that can be used as an exploit.
+For a simple ```wget``` command, we can check it:
+```bash
+wget --server-response --spider ip-address
+```
+
+With this, we already can grasp the Apache version and the host OS.
+To avoid that, we alter ```/etc/apache2/conf-avaialble/security.conf```.
+We set *ServerTokens* to Prod:
+
+![security](images/security.png)
+
+Now the OS is not explicit. To the version, we set *ServerSignature* to Off:
+
+![version](images/version.png)
+
+We also remove the permission to the user see the tree of files on index neither symlinks:
+
+![index](images/index.png)
+
+OBS: Just -Indexes and -Symlinks would be able to do that
 
 ## SadServers "Cape Town"
 
