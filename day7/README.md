@@ -81,6 +81,18 @@ certbot --apache -d example.com
 #-d stands for domain
 ```
 
+It is valid for 3 months. To automatizate it we can create a script to revalidate the certificate via ```cron```.
+
+The [site](https://crontab.guru/) help us to define the period to run the script. For us, we choose:
+* 0 0 1 * *: every first day of the month
+
+![crontab](images/crontab.png)
+
+After ```crontab -e```, we type the script:
+
+![cronjob](images/cronjob.png)
+
+
 #### Apache vulnerabilities
 
 By default, Apache delivers so much information to the user that can be used as an exploit.
