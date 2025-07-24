@@ -62,7 +62,109 @@ Finally, we enable this site with ```ae2ensite``` command. Otherwise, we could u
 ```bash
 a2ensite example
 ```
+#### LAMP
 
+We will prepare our server with LAMP stack:
+* Linux
+* Apache
+* MariaDB (or MySQL)
+* PHP
+
+Firsly, we install MariaDB:
+```bash
+apt install mariadb-server
+```
+
+Furthermore, we initiate a script for the first security steps into our database:
+
+```bash
+mariadb-install-db #configuration databases
+mariadb-secure-installation #security steps
+```
+An error has occurred to start InnoDB, the engine storage for MariaDB:
+
+![innodb](images/innodb.png)
+
+After some research, I have found that InnoDB buffer needs at leats 128Mb of RAM, and looks like we are without it...
+
+After it, the MariaDB daemon was without permission to write, for it we changed the ```/var/lib/mysql``` owner to the ```mysql``` user:
+```bash
+chown mysql:mysql -R /var/lib/mysql
+```
+
+Then, we update the creation of files on ```/tmp```:
+```bash
+chmod 1777 /tmp
+```
+
+We get it running:
+
+![status](images/status.png)
+
+Finally, we install PHP:
+
+```bash
+sudo apt install apache2 libapache2-mod-php php-mysql php-mbstring php-xml php-curl php-gd php-intl php-zip
+```
+We add a ```test.php``` file into ```/var/www/html```:
+
+![php](images/php.png)
+
+We validate if PHP file is being recognized:
+
+![testphp](images/testphp.png)
+
+An user to the Wordpress application must be issued, also the database:
+
+```bash
+mariadb -u root -p password
+```
+Creation of user and database:
+
+![database](images/database.png)
+
+OBS: The command to define user is wrong:
+```sql
+GRANT ALL ON table.* TO 'user'@'domain' IDENTIFIED BY 'password';
+```
+Then we reload the configuration with:
+```sql
+FLUSH PRIVILEGES;
+```
+
+The Wordpress installation can begin:
+
+```bash
+curl -O https://wordpress.org/latest.tar.gz
+tar xf latest.tar.gz
+```
+We move all the files inside ```wordpress``` directory to ```/var/www/html```:
+
+![wordpress](images/wordpress.png)
+
+Now we change the user and permission to all files and directories related:
+
+```bash
+chown -R www-data:www-data /var/www/html/
+find . -type f -exec chmod 640 {} /;
+find . -type d -exec chmod 750 {} /;
+```
+We have to configure our database name, username and hostname on ```wp-config.php``` file:
+
+![user-config](images/user-config.png)
+
+Also, we need to request unique keys and salts to Wordpress API:
+```bash
+curl -s https://api.wordpress.org/secret-key/1.1/salt/
+```
+It provides security:
+* Salts insert random strings on sensitive information before it gets hashed
+* Security keys encrypt information exchanged from cookies
+
+We have to paste it on the same file.
+After all, it should work:
+
+![wordpress-config](images/wordpress-config.png)
 ### Security
 
 #### SSL
