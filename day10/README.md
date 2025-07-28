@@ -105,5 +105,41 @@ tar -czf /var/backups/home.$(date -I).tar.gz /home
 ```
 
 
+![backup](images/backup.png)
+
+Let's create a cronjob for every day to run it:
+
+```bash
+crontab -e
+```
+
+![crontab](images/crontab.png)
 
 
+However, we do not want to fill our backup full of files. We need another cronjob to clean it up. To ```find``` all the backup tarballs:
+
+```bash
+find /var/backups -name "home.*.tar.gz"
+```
+
+We use wildcard to show all that matches:
+
+![find](images/find.png)
+
+For find, we can use the flag ```-mtime``` to filter for how much time the file has been modified. Furthermore, we can delete it with another flag ```-delete```.
+
+```bash
+find /var/backups/home.*.tar.gz -mtime 7 -delete
+```
+
+![delete](images/delete.png)
+
+On day 30th at 00:00 AM, backups older than 7 days will be deleted.
+The system manages a crontab too at ```/etc/crontab```. The local user cronjobs are installed at ```/var/spool/cron/crontabs```:
+
+![local-crontabs](images/local-crontabs.png)
+
+
+![system-crontabs](images/system-crontabs.png)
+
+In this case, each line is a script that runs daily and sequentially starting from ```apache2```.
