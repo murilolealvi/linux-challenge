@@ -66,3 +66,26 @@ To get where the command is located:
 ![which](images/which.png)
 
 We see that ```nano``` is placed at the user binaries ```/usr/bin/nano```.
+
+
+# Extension
+
+We can list open files with ```lsof```. We can specify files opened by a user:
+
+```bash
+lsof -u user
+``` 
+
+Moreover, we can indicate a PID and check which files run it:
+
+```bash
+lsof -p 890
+```
+
+For network debugging, with option ```-i``` we can indicate the network address to match:
+
+```bash
+lsof -i TCP:22
+lsof -i TCP@127.0.0.1
+```
+
