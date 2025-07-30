@@ -40,6 +40,16 @@ usermod -aG  sudo user
 ```
 
 
+We can always edit ```/etc/sudoers``` and set which commands the user would be able to use on ```sudo``` mode:
+```bash
+
+user ALL = NOWPASSWD:/sbin/reboot
+```
+
+The user will be able just to reboot as a superuser.
+
+
+
 
 
 
