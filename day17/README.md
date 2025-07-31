@@ -34,5 +34,65 @@ When compiling nmap, an error arise:
 
 ![dbus](images/dbus.png)
 
+The solution was to pass manually ```dbus``` package:
+```bash
+make distclean
+pkg-config --libs dbus-1 #get system package config
+LIBS="-ldbus-1" ./configure
+make
+```
+
+A second error appears:
+
+![build](images/build.png)
+
+We install build package:
+```bash
+apt install python3-build
+```
+
+And it works now.
+
+## Makefile
+
+In order to deepen or concepts around compiling, we will use the Makefile script to learn it more.
+The construction is made by directives and rules, that sequentially perform commands:
+
+```makefile
+all:
+    echo "Hello World"
+```
+
+We can execute it via ```make```:
+
+![make](images/make.png)
+
+To execute it in quiet mode, we add:
+```makefile
+all:
+    @echo "Hello World"
+```
+
+To return the commands on Makefile script without executing it:
+```bash
+make -n
+```
+
+The structure follows:
+#target #dependency
+    #recipe (commands)
+
+For example:
+
+![message](images/message.png)
+
+![dependency](images/dependency.png)
+
+
+
+We can specify the target with parameters on make command:
+```bash
+make message
+```
 
 
