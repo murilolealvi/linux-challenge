@@ -95,4 +95,85 @@ We can specify the target with parameters on make command:
 make message
 ```
 
+### Fortran compiling
 
+we have the main program, modules and objects for compilation on Fortran. To it, we must compile the module to create the object file (harware capable to read):
+
+```bash
+gfortran -c module.f90 
+```
+It results on a module.mod and module.o files, the .mod has the function prototypes to be handled by the program. Finally, we run:
+```bash
+gfortran module.o program.f90 -o program
+```
+
+Now we have an executable:
+```bash
+./program
+```
+
+
+To illustrate this, we have created a simple sum function:
+
+```fortran
+USE module_lib
+IMPLICIT NONE
+
+REAL:: sum_result
+REAL::a=1, b=2
+
+sum_result = sumall(a,b)
+
+WRITE(*,*) "Sum result is: ", sum_result
+
+END PROGRAM
+```
+
+It has a dependency on module_lib:
+```fortran
+MODULE module_lib
+
+    IMPLICIT NONE
+    CONTAINS
+        FUNCTION sumall(a,b)
+            REAL, INTENT(IN):: a
+            REAL, INTENT(IN):: b
+            REAL:: sumall
+
+            sumall = a+b
+        END FUNCTION
+    END MODULE
+```
+
+
+On Makefile, we have the recipes and dependencies for it. As stated, the dependency for ```program.f90``` file is ```module.f90``` module:
+```makefile
+program: program.f90 module.o
+```
+
+Furthermore, we need to compile the module first:
+```makefile
+module.o: module.f90
+    gfortran -c module.f90
+```
+
+Finally, we issue the executable:
+```makefile
+program: program.f90 module.0
+    gfortran module.o program.f90 -o program
+```
+
+### Compilation flags
+
+During compilation, we can specify flags on the fly:
+* -c : compile the following file
+* -o: output on the following file
+* -J: .mod files on the following directory
+* -I: search modules on the following directory
+
+
+To build it on a more cleaner way, we partition the process into specific directories:
+* /bin: executables (final step)
+* /include: modules (.mod files)
+* /src: programs (.f90 or .c files)
+* /obj: objects (.o files)

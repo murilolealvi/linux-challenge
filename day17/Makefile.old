@@ -1,0 +1,10 @@
+program: program.f90 module.o
+	gfortran module.o program.f90 -o program
+
+module.o: module.f90
+	gfortran -c module.f90 
+
+clean: 
+	rm *.o
+	rm *.mod
+	
