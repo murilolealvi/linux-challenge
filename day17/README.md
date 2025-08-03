@@ -80,7 +80,7 @@ make -n
 
 The structure follows:
 #target #dependency
-    #recipe (commands)
+    #rules (commands)
 
 For example:
 
@@ -168,8 +168,8 @@ program: program.f90 module.0
 During compilation, we can specify flags on the fly:
 * -c : compile the following file
 * -o: output on the following file
-* -J: .mod files on the following directory
-* -I: search modules on the following directory
+* -J: where to put .mod files on the following directory
+* -I: where to find .mod files on the following directory
 
 
 To build it on a more cleaner way, we partition the process into specific directories:
@@ -177,3 +177,90 @@ To build it on a more cleaner way, we partition the process into specific direct
 * /include: modules (.mod files)
 * /src: programs (.f90 or .c files)
 * /obj: objects (.o files)
+
+We start to generalize our Makefile and create a standard for the directories:
+
+```makefile
+
+SRC = ./src
+BIN = ./bin
+INCLUDE = ./include
+OBJ = ./obj
+
+#$^ all dependencies
+#$@ the target
+#$< first dependency
+
+
+all: lib exe
+
+lib: module.o
+
+exe:
+	gfortran $(OBJ)/module.o $(SRC)/program.f90 -I $(INCLUDE) -o $(BIN)/program
+
+module.o: $(SRC)/module.f90
+	gfortran -c $< -J $(INCLUDE) -o $(OBJ)/$@
+```
+
+To scale it out, we must find a way to invoke the compilation for each .f90 file to create a .o file without naming it. We can see that every .f90 file would be named the same for a .o file, so we find a text function intrinsic to the Makefile:
+
+![patsubst](images/patsubst.png)
+
+It basically get a pattern and a path to replace based upon the var. The idea is to pass as a variable all the .f90 files, get the name for each source file and replace it as a object file:
+
+```makefile
+$(patsubst /src/%.f90, /obj/%.o/, /src/*.f90)
+```
+
+Finally, we create a scalable Makefile:
+
+
+
+```makefile
+
+SRC = ./src
+BIN = ./bin
+INCLUDE = ./include
+OBJ = ./obj
+
+TARGET = $(BIN)/program
+SOURCES = $(wildcard $(SRC)/*.f90)
+OBJECTS = $(patsubst $(SRC)/$.f90, $(OBJ)/%.o, $(SOURCES))
+
+#grab .f90 files and replace them as .o files destined to obj/ directory
+
+COMPILER = gfortran
+
+#$^ all dependencies
+#$@ the target
+#$< first dependency
+
+
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS) #previous exe, linking stage
+	@mkdir -p $(BIN) $(INCLUDE)
+
+	$(COMPILER) $^ -J $(INCLUDE) -o $@
+
+
+$(OBJ)/%.o: $(SRC)/%.f90 #compile every object, previous lib
+	@mkdir -p $(OBJ)
+
+	$(COMPILER) -c $< -J $(INCLUDE) -o $@
+
+clean:
+	@rm -rf $(OBJ) $(BIN) $(INCLUDE)
+
+#not confuse clean and all as files
+.PHONY: all clean
+```
+
+We just named the executable file.
+An easy way to do the replacement of .f90 to .o would be:
+```makefile
+OBJECTS = $(SRC:.f90=.o)
+```
+
+However, the objects should be on the same directory and we proposed it to be on /obj/ directory.

@@ -1,0 +1,22 @@
+
+
+
+SRC = ./src
+BIN = ./bin
+INCLUDE = ./include
+OBJ = ./obj
+
+#$^ all dependencies
+#$@ the target
+#$< first dependency
+
+
+all: lib exe
+
+lib: module.o
+
+exe:
+	gfortran $(OBJ)/module.o $(SRC)/program.f90 -I $(INCLUDE) -o $(BIN)/program
+
+module.o: $(SRC)/module.f90
+	gfortran -c $< -J $(INCLUDE) -o $(OBJ)/$@
