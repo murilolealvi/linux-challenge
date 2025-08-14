@@ -55,14 +55,68 @@ modprobe -r module
 The ```modinfo``` can show more about the module:
 ![modinfo](../images/modinfo.png)
 
-
 Through ```/etc/modprobe.d/*.conf``` we can blacklist a module to be loaded, or be preferred.
 
 
+## Storage devices
+
+Storage can be classified on how it manages data:
+* Block: read to and from in blocks/chunks of buffered data from different sizes and positions (hard drives)
+* Character: read to and from in data streams/characters without a specific size (printers)
+* Pipe: like character devices with another process managed at the end of the I/O instead of a kernel driver (device has its own driver managed itself)
+* Socket: interface for interprocess communication outside ```/dev``` directory
 
 
+Most storage devices are now identified as SCSI devices, protocol that leverages special busses in parallel. We can get some info with ```lsscsi``` command:
+```bash
+lsscsi
+[N:0:0:1]    disk    YSSDHB-1TN7000__1                          /dev/nvme0n1
+[N:1:1:1]    disk    ADATA LEGEND 710__1                        /dev/nvme1n1
+```
+
+The first column identifies the device address, the second describes its kind and the last indicates where to find the device file.
+
+## dd
+
+When working with block and character devices, the command ```dd``` is useful. Its function is to read from an input file or stream and write to an output file or stream. It accepts manipulation like encoding and conversion.
+Example:
+```bash
+dd if=/dev/zero of=new_file bs=1024 count=1
+```
+It copies a single 1024 byte block from /dev/zero and writes it on new_file.
+* if: input file
+* of: output file
+* bs: block size
+* count: how many blocks to copy
+* skip: how many first blocks to skip
+
+## Abstraction
+
+The commands mentioned above are just front-end for hardware information found on specific directories on Linux. These directories (or pseudo-filesystems) are mount points to filesystems not present in a device partition, but **only in RAM where it has runtime storage configuration and information for the kernel**. These filesystems are ```/sys```, ```/proc``` and ```/dev```.
+
+For example, for the Ethernet controller we would have a bunch of information maintained on directories at ```sysfs```:
+
+![sysfs](../images/sysfs.png)
 
 
+For hardware inspection, we can use ```/proc```:
 
-## 
+![proc](../images/proc.png)
+
+OBS1: ```/dev``` file enables user processes to use the device, ```/sys``` file provides an interface for hardware info primarily for programs
+
+OBS2: ```/sys``` has primary function to store device information and kernel hardware data, while ```/proc``` includes running processes
+
+
+## Device file creation
+
+We can manually create a device file, but it is not common since ```devtmpfs``` and ```udev``` handles all. For it:
+```bash
+mknod /dev/sda1 b 8 1
+```
+
+The command explicits a SCSI device(HD or SSD) as a block device(c for character, p for pipe and s for socket) and the major and minor number for kernel addressing(8 for SATA/SCSI disk driver and 1 to refer the disk driver for identification).
+
+
+## udev
 
