@@ -118,5 +118,49 @@ mknod /dev/sda1 b 8 1
 The command explicits a SCSI device(HD or SSD) as a block device(c for character, p for pipe and s for socket) and the major and minor number for kernel addressing(8 for SATA/SCSI disk driver and 1 to refer the disk driver for identification).
 
 
-## udev
+## udev and devtmpfs
 
+As seen above, we can create device files at user space already. Why should we concern at kernel level?
+
+The kernel send notifications to user-space proccess called ```udevd``` upon detecting a new device on system. It creates automatically a device file and perform its initialization. But how it does on boot?
+
+Moreover, and if the device is a dependency for other parts of the system to intialize? The ```udev``` daemon resides on user space, so the filesystem must be mount!
+
+An old solution was to initialize a mini version of udev in RAM with ```initramfs``` to create necessary devices and mount the root filesystem. However, not scalable.
+
+Then appears the ```devtmpfs```!
+
+It was created just for the problem of device availability during boot. It is based on the older version ```devfs```, which function was to outline static ```/dev``` mainteinance with MAKEDEV program and keeps at kernel space the implementation of ```/dev``` with all the devices the kernel current support.
+The drawback is visible, it creates device files for every loaded driver even if it was not operational or even initialized.
+
+The ```devtmpfs``` proposes a simplified way while creating device files on demand in **RAM**. It operates as a mechanism by identifying and **creating** device files, then the ```udevd``` is notified for permissions, ownership and symlinks creation. The steps go:
+* system starts
+* POST for device check
+* bootloader and initramfs image creation
+* devtmpfs creation for any new device identification
+* kernel mounts initramfs as its temporary root filesystem and ```/dev``` is delivered by devtmpfs
+* minimal udevd starts to scan and apply policies on the new device files
+* perform switch root to the main init system, usually ```systemd```
+
+We can check the syslinks created by udev. It resides at ```/dev/disk/by-uuid``` and ```/dev/disk/by-label```
+
+![udev-symlinks](../images/udev-symlinks.png)
+
+
+And when we insert devices if the system already up?
+
+The ```udevd``` is already up, it waits for notifications called ```uevent``` through an internal network link(netlink socket, to avoid writing into a file). It loades the attributes(vendor ID, product ID, serial number...) and apply rules(placed at ```/etc/udev/rules.d``` and ```/lib/udev/rules.d``` for symlink creation and firmware load). We monitor uevents:
+```bash
+udevadm monitor
+```
+
+We query the properties with --property option. For example, I have inserted a USB drive:
+
+![udevadm](../images/udevadm.png)
+
+We can see that it has attributes for sysfs path, /dev path and IDs. We can query already loaded devices:
+```bash
+udevadm info --query=all --nam=/dev/sda
+```
+
+It gaves the symlinks and the attributes.
