@@ -164,3 +164,42 @@ udevadm info --query=all --nam=/dev/sda
 ```
 
 It gaves the symlinks and the attributes.
+
+
+## SCSI concepts
+
+SCSI is a set of standards to transfer data between hosts and peripheral devices. Its traditional setup is a host adapter linked with a chain of devices over a SCSI bus:
+
+![scsi-bus](../images/scsi-bus.png)
+
+Each device(**target**) is managed by its SCSI ID (8 or 16 bits long per bus) and can have sub-devices attached with a **Logical Unit Number(LUN)**. Any of them can communicate with each other and must go through the host adapter. The identification does as follows:
+* SCSI host adapter
+* SCSI bus number
+* SCSI ID
+* LUN
+
+![lsscsi](../images/lsscsi.png)
+
+From this image, we see four host adapters (scsi0, ..., scsi3). For the scsi2, we have a SCSI ID 0 with 4 sub-devices. The communication at kernel level does as follows:
+![scsi-tree](../images/scsi-tree.png)
+
+* the block device is handled by its driver being disk or CD
+* this driver abstracts requests from kernel block device into SCSI commands
+* the bridge handles hardware-specific actions to manage SCSI messages to specific host adapters (they vary on procedures)
+* follows the driver related to the disk
+    * SATA drives has an additional layer with **libata**  to act as a translator for ATA and SCSI messages
+
+### Generic SCSI devices
+
+In order to read and write to a SCSI device, a generic driver located on user-space can be used.
+
+To list generic devices (pure SCSI devices):
+```bash
+lsscsi -g
+```
+
+It is an architectural choice in order to leave complexity from the kernel (stability and fault isolation). For example, write into CD/DVD disks has more burden than read:
+
+![generic-device](../images/generic-device.png)
+
+A file ```/dev/sg1``` in user-space do the translation as would the bridge layer.
