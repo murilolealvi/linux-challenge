@@ -34,5 +34,44 @@ The configuration is handled on ```/etc/default/grub```. For kernel parameters w
 grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
-## Kernel initialization and Boot options
+## Kernel initialization
+
+The kernel does at operational system level the following:
+- CPU and memory inspection
+- Device and bus discovery
+- Subsystem setup (e.g networking)
+- Root filesystem mount
+- User space start
+
+
+During kernel load, a set of parameters is used to define the amount of diagnostics output to produce as well device driver-specific options. To check the currently in use:
+```bash
+cat /proc/cmdline
+```
+
+![cmdline](../images/cmdline.png)
+
+We can arbitrarily select the root parameter as the most important, since it selects the filesystem UUID which the system will boot (it does not leverage kernel mapping (e.g ```/dev/sda```)).
+
+The ```ro``` parameter builds the filesystem in read-only mode. Parameters not readable by the kernel are maintained to the init process. For introduction to available parameters:
+```bash
+man bootparam
+```
+
+For example, we can choose the beforemost initial command to be issued by the kernel with ```-init```.
+
+### bootloader
+
+An issue the bootloader must overcome is the capacity to locate the kernel and its parameters, which are most usually in kernel filesystem itself. For this, the BIOS/UEFI system must access disk and identify the kernel location, and obviously it must not depend on device files (since the kernel is not initialized yet).
+
+For this, the firmware has a simple data access protocol called Logical Block Addressing (LBA). Afterwards, the data management uses SCSI and device files.
+
+Fun fact: When pressing ```e``` on GRUB, we are able to check bootloader configuration
+
+![grubconfig](../images/grub-config.png)
+
+
+
+
+
 
