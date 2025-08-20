@@ -70,12 +70,6 @@ Fun fact: When pressing ```e``` on GRUB, we are able to check bootloader configu
 
 ![grubconfig](../images/grub-config.png)
 
-
-
-
-
-
-
 It can show more parameters, as shown:
 
 ![grub-example](../images/grub-example.png)
@@ -87,4 +81,3 @@ It shows:
 - Modules for MSDOS and EXT2
 
 The big questions resides on root nomenclature. For GRUB, it names the device from its OWN configuration, in this case ```hd0,msdos1```. Afterwards, it searches for a specific UUID partition and loads the kernel image file with the location specified. In the end, the initial RAM filesystem (```initrd```) is also specified.
-
