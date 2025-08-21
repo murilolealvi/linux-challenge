@@ -31,7 +31,7 @@ The most famous is GRUB(Grand Unified Bootloader) for Linux systems. A bunch of 
 
 The configuration is handled on ```/etc/default/grub```. For kernel parameters we use the field ```GRUB_CMDLINE_LINUX``` and we can check it on ```/proc/cmdline```. To create a new configuration:
 ```bash
-grub-mkconfig -o /boot/grub/grub.cfg
+grub2-mkconfig -o /boot/grub/grub.cfg
 ```
 
 ## Kernel initialization
@@ -80,4 +80,20 @@ It shows:
 - Initial RAM filesystem located at /boot/initrd.img
 - Modules for MSDOS and EXT2
 
-The big questions resides on root nomenclature. For GRUB, it names the device from its OWN configuration, in this case ```hd0,msdos1```. Afterwards, it searches for a specific UUID partition and loads the kernel image file with the location specified. In the end, the initial RAM filesystem (```initrd```) is also specified.
+The big questions resides on root nomenclature. For GRUB, it names the device from its OWN configuration, in this case ```hd0,msdos1```. Afterwards, it searches for a specific UUID partition and loads the kernel image file with the location specified. In the end, the initial RAM filesystem (```initrd```) is also specified. 
+
+We can get into GRUB command line pressing ```c``` on boot:
+
+![grub-cli](../images/grub-cli.png)
+
+From the first command, we see that it has the same list command ```ls```. The main disk is denoted as **cd0**. With ```ls -l``` we get details:
+
+![grub-ls](../images/grub-ls.png)
+
+To check the root filesystem defined and the files inside its partition:
+
+![grub-partition](../images/grub-partition.png)
+
+
+
+
