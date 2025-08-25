@@ -128,7 +128,104 @@ On startup, we can explicitly tell the service behavior within the Type field:
 - forking: forks itself
 - notify: notificates to systemd with a function call
 - dbus: registers itslef on the d-bus
+- oneshot: do not consider on startup
+- idle: all active jobs must finish before start
 
+
+It acts like a resource pool and keeps an eye into every new process that could be created by it. These groups are separated as:
+* .slice: units grouped together to manage resources
+* system.slice: system services (NGINX, databases, syslog...)
+* user.slice: user session (for each one)
+* machine.slice: VMs and containers
+* .scope: externally created processes
+
+
+An example of usage for cgroups is to limit CPU and memory inside its unit:
+```json
+[Unit]
+Descrioption=App
+
+[Service]
+ExecStart=/usr/local/bin/myapp
+CPUQuota=10%
+MemoryMax=500M
+TasksMax=200
+
+[Install]
+WantedBy=multi-user.target
+```
+
+OBS: The ```.target``` file works as SysVinit runlevels, ensuring all the necessary services (units) respect a particular system state:
+- graphical.target: full GUI
+- multi-user.target: multi-user and network
+- network.target: network stack
+- sockets.target: socket units
+- rescue.target: root shell and system repair
+- reboot.target: reboots
+- poweroff.target: shuts down
+
+To switch between targets:
+```bash
+systemctl isolate multi-user.target
+```
+
+To set as default, we could add a kernel parameter as ```sytemd.unit=multi-user.target``` or set as default:
+```bash
+systemctl set-default multi-user.target
+```
+
+
+**Exercise**: With all these concepts, I want to create a script to kill Brave Browser immediately before a shutdown or restart. I create a ```gracefully-kill-brave.service``` file into ```/etc/systemd/system/```:
+```json
+[Unit]
+Description=Gracefully kill Brave browser before shutdown
+DefaultDependencies=no
+Before=shutdown.target reboot.target halt.target poweroff.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStop=/usr/bin/pkill -INT brave
+
+[Install]
+WantedBy=multi-user.target
+```
+
+The DefaultDependencies option prevents to be stopped when shutdown/reboot sequence.
+The RemainAfterExit directive allows the service to be active even after termination.
+
+We reload unit configuration:
+```bash
+systemctl daemon-reload
+```
+
+And enable it on startup:
+```bash
+systemctl enable gracefully-kill-brave.service
+```
+
+The systemd is flexible to indicate dependencies for a unit:
+- Requires: strict dependency
+  - if the dependent unit is not active, this one will be deactivated as well
+- Wants: activation only
+  - do not care if the dependent unit fails to start
+- Requisite: must already be active
+  - to active this unit the dependent must be active already and fails if not so
+- Conflicts: negative dependencies
+  - if the dependent unit is active, this one will be deactivated
+  
+We can show these dependencies:
+```bash
+systemctl show -p Wants/Requires/Requisite/Conflicts unit
+```
+
+For example, the sshd.socket:
+```bash
+systemctl show -p Conflicts sshd.socket
+Conflicts=shutdown.target sshd.service
+```
+
+It basically tells that sshd.socket (aware of SSH connection) but not be active when sshd.service is active (SSH session up) and when shutdown.target is active (system shutting down).
 
 
 
