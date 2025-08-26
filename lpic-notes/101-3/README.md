@@ -13,7 +13,7 @@ Let`s discuss step by step.
 
 ## init
 
-As a process as any other program, it is located in ```/sbin```. From Linux history, it had a bunch of init candidates:
+As a process as any other program, it is located in ```/sbin```.  It is a symbolic to the actual init process (e.g., ```/lib/systemd/systemd``` for systemd systems). From Linux history, it had a bunch of init candidates:
 
 ### SysVinit
 
@@ -50,6 +50,11 @@ ca::ctrlaltdel:/sbin/shutdown -t3 -r now
 2:2345:respawn:/sbin/mingetty tty2
 ``` 
 
+Besides the command it has an action. The ```respawn``` tells init to run the command and if it finishes, run again. However, the ```wait``` action makes init to wait until command full completion. Other ones:
+- sysinit: executed after system initialization
+- ctrlaltdel: executed when SIGINT is issued
+- bootwait: executed during system initialization and wait until finishes
+
 In the runlevel file:
 
 ```bash
@@ -74,7 +79,7 @@ sudo service httpd start
 
 As we can see, one of the biggest flaws for SysVinit is that it starts services **sequentially**. Moreover, this sequence is solely based on the script nomenclature (e.g. S10 before S20).
 
-## systemd
+### systemd
 
 The modern init process propose:
 - parallel service starting
@@ -226,6 +231,77 @@ Conflicts=shutdown.target sshd.service
 ```
 
 It basically tells that sshd.socket (aware of SSH connection) but not be active when sshd.service is active (SSH session up) and when shutdown.target is active (system shutting down).
+
+The tricky part is how the system manages the priority for Requisite and Conflicts dependency. Which unit from several dependencies should start first? And if one needs other to be active already?
+
+In the underlying, the system dictates this with ocult Before and After statements. For example, it adds an After modifier alongside any unit as a Wants dependency (default dependency). We can avoid this with DefaultDependencies=no. Other conditional dependencies:
+- ConditionPathExists=path-to-the-file
+- ConditionPathIsDirectory=path-to-the-directory
+- ConditionFileNotEmpty=path-to-the-file
+
+The dependent unit can also specify dependencies at Install section. For example, the Wants/Requires dependency could also be specified as a WantedBy/RequiredBy statement that points to the dependent unit:
+
+```json
+[Unit]
+Description= unit
+[Install]
+WantedBy=test.target
+```
+
+It automatically creates a .wants/.requires subdirectory corresponding to the dependent unit. For example, into the ```ssh.service.requires```:
+
+![requiredby](../images/requiredby.png)
+
+It dinamically assigns sockets.target and ssh.service dependencies.
+
+
+### upstart
+
+Originally from Canonical for Ubuntu distro, already discontinued.
+The ```systemctl list-units``` substitute:
+```bash
+initctl list
+```
+
+The ```systemctl start unit``` substitute:
+```bash
+start tty6
+```
+
+
+## shutdown
+
+To shutdown immediatelly:
+```bash
+shutdown -h now
+```
+
+It halts (shuts and keeps it down) the machine. We could schedule:
+```bash
+shutdown -h 01:00
+```
+
+In 1 hour it would shutdown. To restart we just use ```-r``` option:
+```bash
+shutdown -r +2
+```
+
+In this case, it would restart in 2 minutes. The ```systemd``` has its alternatives:
+```bash
+systemctl poweroff
+systemctl reboot
+```
+
+To cancel it:
+```bash
+shutdown -c
+```
+
+
+
+
+
+
 
 
 
