@@ -297,7 +297,23 @@ To cancel it:
 shutdown -c
 ```
 
+# initfs
 
+ The initial RAM filesystem normally resides at ```/boot/init*.img```. It was built as a disk(old ```initrd```, read it as a block device) that should be mounted into RAM. Currently, the modern systems use ```cpio```, an archive file that kernel unpacks directly into memory. We can get the contents of the inital RAM filesystem:
+
+ ![unmkinitramfs](../images/unmkinitramfs.png)
+
+ The command to unpack it is:
+ ```bash
+ unmkinitramfs /boot/init*.img destination-directory/
+ ```
+
+ We could built our own initfs image with ```mkinitramfs``` or ```dracut```. For example, same loadable drivers already inside it:
+
+ ![ramdrivers](../images/ramdrivers.png)
+
+
+OBS: The floppy driver is for legacy disks, rbd is for RADOS and ndb for network storage volume (SAN, iSCSI, Ceph, NBD, bucket...)
 
 
 
