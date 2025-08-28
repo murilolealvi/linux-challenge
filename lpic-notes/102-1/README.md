@@ -84,6 +84,14 @@ Types:
 - xfs (performance with large files and dynamic allocation): the filesystem capable to handle the largest files (up to 8 exbibytes!), it is optimized for large sequential I/O operations (streaming, large databases...) and allocate dynamically space and inodes
 - zfs (data integrity and own RAID implementation): it has a primary focus on preventing data corruption with 256-bit checksum and copy-on-write nature
 
+OBS: The ext4 and xfs are **journaling** filesystems, in other words it protects against data corruption by keeping a log(a journal cache) for changes to be made to the disk.
+
+To troubleshoot a corrupted disk, we flush the journal which is inconsistent with the actual data. First we mount it as ext2(ext3 and ext4 does not allow to mount it with a nonempty journal):
+```bash
+mount -t ext2 /dev/sda mountpoint
+efsck -fy /dev/sda #f for flush and y for yes
+```
+
 
 To create a filesystem in a disk:
 
@@ -129,11 +137,54 @@ mount UUID=2025-07-02-20-57-26-00 /home/extra
 
 ### /etc/fstab
 
+The system keeps a list of filesystems and options in ```/etc/fstab```, named filesystem table. It is maintaned as a plain text and we can check:
+
+![fstab](../images/fstab.png)
+
+We can see the label/UUID, the mount point, the filesystem type, options, backup info(always set to 0) and the filesystem integrity test order(```fsck``` to check for 1 if root, 2 for other and 0 for disable - in this example the disk for boot is set as other).
+
+To health check a particular UNMOUNTED disk (or it is on read-only mode):
+```bash
+fsck /dev/sda
+```
+
+To automatically fixes ordinary problems:
+```bash
+fsck -p /dev/sda
+#or for all disks
+fsck -a 
+```
+
+We can run it without modifying any data:
+```bash
+fsck -n
+```
+
+![fsck](../images/fsck.png)
+
+
+If the filesystem was not automatically mounted:
+```bash
+mount -a/--all
+```
+
+It mounts every entry from fstab(filesystem table).
+OBS: 
+* The **defaults** mount options set read-write mode, enable device files, executables, setuid(per user)...
+* The **noauto** tells to the system to not automatically mounts the filesystem in boot time
+* The **errors** sets the kernel behavior when it fails to mount the filesystem, the common ones are *errors=continue*, *errors=panic* and *errors=remount-ro*(remount as read-only)
+* The **user** indicates that unprivileged users can mount on this particular entry
 
 
 
+### special filesystems
 
-
+In Linux, we have some important filesystems:
+- proc (/proc) mounts processes information into each file
+- sysfs (/sys) for attached devices
+- tmpfs (/run) to use memory as temporary storage
+- squashfs as a read-only filesystem where content is stored in a compressed format and extracted on demand
+- overlay that merges directories into a composite by creating layers for each directory (lowerdir and upperdir), for example when managing containers the system creates multiple read-only lowerdir layers and the node only writes into the upperdir
 
 
 
