@@ -186,6 +186,23 @@ In Linux, we have some important filesystems:
 - squashfs as a read-only filesystem where content is stored in a compressed format and extracted on demand
 - overlay that merges directories into a composite by creating layers for each directory (lowerdir and upperdir), for example when managing containers the system creates multiple read-only lowerdir layers and the node only writes into the upperdir
 
+## logical volume manager (LVM)
+
+When defining partitions, it is done once before populating it. We have little administration on how it is distributed, expanded, shrinked afterwards. The LVM allows such flexibility with a virtualization layer between the disk and the filesystem:
+- the disk is called physical volume (PV)
+- PVs are grouped into volume groups (VGs) which abstracts the underlying devices, seen as a single logical device (pool)
+  - normally the systems have one PV and two **logical volumes** (into a single volume group, like partitions) for root and swap
+  - it is subdivided into fixed-sized pieces called extents (4MB by default)
+  
+  ![lvm](../images/lvm.png)
+
+To add size, extents are placed into the pool. The operations that LVM handles are:
+- add move PVs to a VG, increasing its size
+- remove PVs as long there is enough space for the data
+- resize logical volumes (in other words resize filesystems with ```fsadm```)
+
+
+
 
 
 
