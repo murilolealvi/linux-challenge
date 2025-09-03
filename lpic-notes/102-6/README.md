@@ -25,3 +25,52 @@ As previously noted, Docker uses **overlay** filesystem to manage the storage in
 ![overlay](../images/overlay.png)
 
 The Docker and host directories are merged into a single spot. In rootless mode(Podman based), the FUSE version is used (maintains the container in user-mode).
+
+### implementation
+
+Let's try to implement our own engine to run a container. It is just to illustrate these concepts and will have limitations.
+
+
+First, we must have an overlay filesystem and would have the following hierarchy:
+- lowerdir: read-only container base image
+- upperdir: writeble changes on host
+- workdir: internal directory for overlayfs
+- merged: unified view as root filesystem to the container
+
+For our "container image", we will use ```busybox```. It contains common Unix utilities on a single small executable. We install it:
+```bash
+apt install busybox
+```
+
+Once installed, we create our base filesystem that which will compose the lower layer directory for the overlayfs:
+```bash
+mkdir -p container/bin
+```
+
+And copy the ```busybox``` exectuable into that directory and create a symlink for two commands(```sh``` and ```ls``` in busybox): 
+```bash
+cp $(which busybox) ./container/bin
+ln -s busybox ./container/bin/sh
+ln -s busybox ./container/bin/ls
+```
+
+OBS1: The symlink is created to a relative path for busybox, so it searches on the same directory.
+OBS2: The busybox feature is a multi-call binary, it cleverly decides which command to run by checking the name it was called with(```sh``` and ```ls``` in this case).
+
+Afterwards, we can mount it as an overlayfs:
+```bash
+mkdir upper work merged
+mount -t overlay overlay -o lowerdir=./container/,upperdir=./upper/,workdir=./work/ ./merged
+```
+
+We call options and initializes the directories as layers.
+
+![merged](../images/merged.png)
+
+Try to create a file inside it:
+
+![upper](../images/upper.png)
+
+The write was only at the upperdir(/upper) and the merged directory(/merged/). 
+
+The script needs to automate this process inside the container image.
