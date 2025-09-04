@@ -74,3 +74,69 @@ Try to create a file inside it:
 The write was only at the upperdir(/upper) and the merged directory(/merged/). 
 
 The script needs to automate this process inside the container image.
+
+Now we want to create a namespace to our instance. For it, we use the command ```unshare``` that has the following options:
+* --pid: isolates PID number space
+* --mount: isolates mount points (important for overlayfs lowerdir)
+* --uts: isolates hostname and domain name
+* --ipc: isolates inter-process communication
+* --net: isolates network stack
+* --user: isolates user and group IDs
+
+The problem with the mount with overlayfs previously was that it is visible to all the system host:
+
+![overlayfs-visible](../images/overlayfs-visible.png)
+
+Now we will unmount and create a mount point inside a namespace:
+```bash
+umount ./merged
+```
+
+To create a namespace with a shell as a new child process(--fork):
+```bash
+unshare --mount --fork /bin/sh
+```
+
+Inside this shell we mount the overlayfs all over again:
+```bash
+mount -t overlay overlay -o lowerdir=./container,upperdir=./upper,workdir=./work ./merged
+```
+
+Consequently, the filesystem is not shown in the host shell:
+
+![overlayfs-abstraction](../images/overlayfs-abstraction.png)
+
+However, it takes the same effect on unshare shell:
+
+![unshare](../images/unshare.png)
+
+When the shell is closed, automatically the filesystem is unmounted.
+
+The overlayfs uses ```mount()``` system call and it needs root privileges. For rootless containers, the alternative is ```fuse-overlayfs```, and it acts as an intermediary layer between user and kernel. For that reason, a context switch makes the performance lower than directly with a system call, but adds security. The procedure would be the same with a mount call different:
+```bash
+fuse-overlayfs -o lowerdir/.container,upperdir=./upper,workdir=./work ./merged
+fuserumount -u ./merged
+```
+
+For resource allocation, we use ```cgroups```(Control Groups). It is managed at ```sys/fs/cgroups``` directory and there is listed the resources:
+
+![cgroups-dir](../images/cgroups-dir.png)
+
+OBS: From the directory tree, it is under **cgroups v2** because it is unified. Previously on **cgroups v1** the controller were separated from resource(```./memory```, ```./cpu```...)
+
+We create a cgroup inside it:
+```bash
+mkdir /sys/fs/cgroup/container-cgroup
+```
+
+The control files are automatically created:
+
+![cgroup-files](../images/cgroup-files.png)
+
+We add a 100MB limit to the memory:
+```bash
+echo 100M | tee /sys/fs/cgroup/container-cgroup/memory.max
+```
+
+To add the current shell as a process inside it:
+
