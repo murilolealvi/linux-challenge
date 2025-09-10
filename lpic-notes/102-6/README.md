@@ -178,3 +178,24 @@ dmesg | grpe -i "killed process"
 
 
 This is how the resources are bounded in containers.
+
+#### chroot
+
+The final step is to isolate the root filesystem from the host and the container. The command ```chroot``` provide it for the process and the new root directory.
+
+The mount point namespace that we created ensured that mount/unmount operations do not affect the host filesystem.
+
+Previously, we used a new namespace to actually mount a overlay filesystem. Now, we will jail into the merged layer:
+
+```bash
+unshare --mount --fork chroot ./merged /bin/sh
+```
+
+In the end, filesystem operations and its view is fully restricted.
+The ```unshare --mount``` takes a snapshot fot the host's list of mounts for the new process so it can view the ```./merged``` prepared.
+
+A bash script to perform each step has been created, the ideia is to simulate the ```docker exec```  command inside a running container.
+
+
+
+
