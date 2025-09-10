@@ -42,6 +42,8 @@ For our "container image", we will use ```busybox```. It contains common Unix ut
 apt install busybox
 ```
 
+#### overlayfs and namespaces
+
 Once installed, we create our base filesystem that which will compose the lower layer directory for the overlayfs:
 ```bash
 mkdir -p container/bin
@@ -118,6 +120,9 @@ fuse-overlayfs -o lowerdir/.container,upperdir=./upper,workdir=./work ./merged
 fuserumount -u ./merged
 ```
 
+
+#### cgroups
+
 For resource allocation, we use ```cgroups```(Control Groups). It is managed at ```sys/fs/cgroups``` directory and there is listed the resources:
 
 ![cgroups-dir](../images/cgroups-dir.png)
@@ -135,8 +140,41 @@ The control files are automatically created:
 
 We add a 100MB limit to the memory:
 ```bash
+echo +memory | sudo tee /sys/fs/cgroup/container-cgroup/cgroup.subtree_control
 echo 100M | tee /sys/fs/cgroup/container-cgroup/memory.max
 ```
 
-To add the current shell as a process inside it:
+OBS: The resource must be announced to subtree directory controller
 
+To add the current shell as a process inside it:
+```bash
+echo $$ | sudo tee /sys/fs/cgroup/container-cgroup/shell/cgroup.procs
+```
+
+OBS1: The special parameter $$ expands to the PID of current shell
+
+OBS2: The cgroup handles it in parent/child hierarchy, processes are under an internal node and the leaf node can limit its resources. On this example, the memory up to 100M is limited for all nodes under the leaf ```container-cgroup```  and we added the shell into a task inside it.
+
+We could even just limit the shell atomically:
+
+![shell-node](../images/shell-node.png)
+
+The memory limit can be tested with ```stress-ng``` feature:
+```bash
+sudo apt install stress-ng
+```
+
+We issue a value to test:
+```bash
+stress-ng --vm 1 --vm-bytes 101M
+``` 
+
+On kernel logs we can check:
+```bash
+dmesg | grpe -i "killed process"
+```
+
+![dmesg-cgroup](../images/dmesg-cgroup.png)
+
+
+This is how the resources are bounded in containers.
