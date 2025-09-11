@@ -197,5 +197,74 @@ The ```unshare --mount``` takes a snapshot fot the host's list of mounts for the
 A bash script to perform each step has been created, the ideia is to simulate the ```docker exec```  command inside a running container.
 
 
+## virtualization
+
+The common hypervisors are:
+- Xen: open-source type-1 hypervisor (or baremetal)
+- KVM: kernel module for virtualization under ```libvirt``` daemon for both type-1 and type-2
+- VirtualBox: type-2 hypervisor
+
+
+And the virtual machines are classified:
+- fully virtualized: no drivers necessary to translate instructions host-guest (Intel VT-x or AMD-V CPU extensions)
+- paravirtualized: guest drivers for translation (KVM uses Virtio and VirtualBox uses Guest Extensions)
+- hybrid
+
+### KVM
+
+Configuration files for KVM are XML based:
+```bash
+ sudo cat /etc/libvirt/qemu/networks/default.xml
+ #output
+ <!--
+WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
+OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
+  virsh net-edit default
+or other application using the libvirt API.
+-->
+
+<network>
+  <name>default</name>
+  <uuid>513718c7-c70f-49c5-8ff4-b720552fe739</uuid>
+  <forward mode='nat'/>
+  <bridge name='virbr0' stp='on' delay='0'/>
+  <mac address='52:54:00:5e:f7:e1'/>
+  <ip address='192.168.122.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.122.2' end='192.168.122.254'/>
+    </dhcp>
+  </ip>
+</network>
+```
+
+Here shows an emulated hardware ```virbr0``` to act as a router for this network (IP range, DHCP, NAT, MAC address). The other default file from RHEL defines the core of the VM, which includes the amount of RAM, CPUS, display capabilities, USB access and so on.
+
+Images that virtual machines can use:
+- Copy-on-write: the disk file is used on demand, the upper limit is defined however it will only increase as new data is written (```qcow2``` for QEMU COW)
+- raw: pre-allocation of disk file, more performatic since it avoids monitoring
+
+
+Linux installations generate a machine identification called **D-Bus machine ID**. If the VM is cloned, the D-Bus machine ID must be regenerated in order to ensure that IPC and RPC goes to the right systme. To validate:
+```bash
+dbus-uuidgen --ensure
+#should show no errors
+dbus-uuidgen --get #gets the ID
+```
+
+The ID is located at ```/var/lib/dbus/machine-id``` and symbolically linked to ```/etc/machine-id```. If two VMs have the same ID, to generate manually:
+```bash
+rm -f /etc/machine-id
+dbus-uuidgen --ensure=/etc/machine-id
+```
+
+
+
+
+
+
+
+
+
+
 
 
