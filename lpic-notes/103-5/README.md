@@ -54,3 +54,46 @@ After every 5 seconds, it monitors the ```free```:
 ![watch](../images/watch.png)
 
 
+To find open files we use ```lsof```:
+
+![lsof](../images/lsof.png)
+
+The readibility is:
+- command
+- pid
+- user
+- fd: purpose of the file or descriptor
+- type: regular file, directory, socket...
+- device: major and minor number for device holder
+- size/off
+- node: inode file
+- name
+
+To limit it for a directory:
+```bash
+lsof +D /usr
+```
+
+For a PID:
+```bash
+lsof -p pid
+```
+
+To get the a summary of the options:
+```bash
+lsof -h #or --help
+```
+
+## multitask
+
+Processes operates into CPU core time slots. Each process is selected via *system calls* (OS process to CPU control) and the interval between the response from CPU is allocated for another program. 
+
+However, programs that do not use system calls would use the CPU indefinitely. The workaround is **preemption**, which has a timer that calculates the CPU slice for the process to forcibly interrupt it and proceed with the queue.
+
+The master for this management is the **scheduler**. It can be defined into policies and priorities:
+* real-time policy: critial tasks with 0-99 priority number
+* normal policy: system and user programs with 100-139 priority number which have same priority value and influenced by their "nice value" (-20 to +19 or 100 to 139 priority number) based on aggressive CPU utilization need.
+
+
+
+
