@@ -1,6 +1,23 @@
 # Modify process execution priorities
+Priority under multitasking and multithreading system
 
-Processes operates into CPU core time slots. Each process is selected via *system calls* (OS process to CPU control) and the interval between the response from CPU is allocated for another program. 
+
+## multitask
+
+Processes operates into CPU core time slots. Each process is selected via *system calls* (OS process to CPU/kernel control) and the interval between the response from CPU is allocated for another program. 
+
+To monitor the system calls made:
+```bash
+strace command
+```
+
+Previously, the learned that one process can start another with *fork()* syscall to spawn a copy and *exec()* to start a new program. The ```strace``` monitors after the *fork()* call:
+
+![strace](../images/strace.png)
+
+From the image, we see that it starts with *exec()* family syscall (*execve()*) and then memory initialization(*brk()*).
+
+To only monitor library calls, we can use ```ltrace```. It does not track anything at kernel level.
 
 However, programs that do not use system calls would use the CPU indefinitely. The workaround is **preemption**, which has a timer that calculates the CPU slice for the process to forcibly interrupt it and proceed with the queue.
 
@@ -27,6 +44,14 @@ If already in activity, we can ```renice``` it:
 renice -10 -p pid #reduces 10 from niceness
 #we can specify a group(-g) or an user(-u)
 ```
+
+## multithread
+
+A thread is similar to a process with an identifier (thread ID or TID) and the kernel scheduler runs threads just like it. However, all threads inside a single process share their system resources and some memory.
+
+The primary advantage is the intercommunication with their shared memory instead of network connection or pipe. To overcome multiple I/O resources, which usually *fork()* itself to handle a new input or output stream, the thread offer a similar mechanism without overhead to start a new process.
+
+
 
 
 
