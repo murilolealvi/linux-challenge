@@ -35,7 +35,7 @@ To execute a command only if the test has status 0 with logical AND, we can use:
 test "$name" = "murilo" && echo "Hello, Murilo!"
 ```
 
-![&&](images/&&.png)
+![&&](images/and.png)
 
 On the other way, we can check if the test has status 1 with logical OR:
 
@@ -43,7 +43,7 @@ On the other way, we can check if the test has status 1 with logical OR:
 test "$name" = "murilo" || echo "You should not pass!"
 ```
 
-![||](images/||.png)
+![||](images/or.png)
 
 We can test it altogether by grouping commands and giving exit codes:
 
