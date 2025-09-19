@@ -85,6 +85,98 @@ To create a subvolume:
 btrfs subvolume create /mnt/disk/backup
 ```
 
+To check its info:
+
+```bash
+btrfs subvolume show /mnt/disk/backup
+``` 
+
+And mount it:
+
+```bash
+mount -t btrfs -o subvol=NAME /dev/sdb1 /mnt/disk/backup
+```
+
+To work with **snapshots**:
+```bash
+btrfs subvolume snapshot /mnt/disk /mnt/disk/snap
+# -r for readonly
+```
+
+## Parted
+
+Unlike ```fdisk``` and ``gdisk``, ``parted`` applies immediately the commands. It is the alternative for ``diskpart`` in Windows.
+
+We first select the disk:
+```bash
+parted /dev/sda
+```
+
+To switch to another one:
+```bash
+select /dev/sdb
+```
+
+To get information:
+```bash
+print #current disk
+print devices #summary for all disks
+print free #free unalocatted space
+```
+
+![parted-print](../images/parted-print.png)
+
+For partition table creation, we label it:
+```bash
+mklabel msdos #MBR
+mklabel gpt #GPT
+```
+
+Finally, for partition creation:
+```bash
+mkpart primary ext4 1m 100m
+# partition type | filesystem type | partition start | partition end
+# partition type can be primary, logical or extended
+```
+
+From the ``print devices`` command we could check a number associated to each partition. To delete it:
+```bash
+rm partition-number
+```
+
+We could also recover it:
+```bash
+rescue START END #start and end sector of deleted partition
+```
+
+To resize an unmounted partition:
+```bash
+resizepart partition-number how-much-to-increase
+#e.g.,
+resizepart 3 350m
+#the increase is count from the start sector
+```
+
+For the entire disk:
+```bash
+resize2fs /dev/sda1 size
+```
+
+To shrink would be the same concept:
+```bash
+resize2fs -M /dev/sda1 #to shrink it sufficient for the files inside it
+```
+
+To create a swap partition under ``parted``:
+```bash
+mkpart primary linux-swap START END
+# the sector must represent the swap partition
+mkswap /dev/sda1 #the disk under the partition
+swapon /dev/sda1
+swapoff /dev/sda1 #to disable
+```
+
+OBS: For ``fdisk`` and ``gdisk`` the process would be to create a partition with code 82 and 8200 respectively
 
 
 
