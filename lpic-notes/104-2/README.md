@@ -117,4 +117,26 @@ And to insert a percentage to it:
 tune2fs -m 1 /dev/sda1 #1% allocated
 ```
 
-On older hardware, the disk size were much smaller. Nowadays, we can reduce it for more space and even restore a full disk to allow another operations without stop the machine.
+On older hardware, the disk size were much smaller. Nowadays, we can reduce it for more space and even restore a full disk to allow another operations without stopping the machine.
+
+## XFS
+
+The XFS alternative for ``fsck`` is ``xfs_repair``. To perform only a scan without repair:
+```bash
+xfs_repair -n /dev/sda1
+```
+
+A cool setting is to limit memory for the utility:
+```bash
+xfs_repair -m 100 /dev/sda1 #limits to 100MB
+```
+
+To debug:
+```bash
+xfs_db /dev/sda1
+```
+
+And to defragmentize (maintain contiguous data) an XFS filesystem:
+```bash
+xfs_fsr /dev/sda1
+```
